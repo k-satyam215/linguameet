@@ -11,7 +11,7 @@ services:
       - key: PROVIDER
         value: mock
       - key: CORS_ORIGINS
-        value: "*"
+        value: https://linguameet-amber.vercel.app
       - key: LIVEKIT_URL
         sync: false
       - key: LIVEKIT_API_KEY
