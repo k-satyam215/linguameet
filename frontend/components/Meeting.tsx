@@ -8,6 +8,8 @@ import { JoinInfo, Lang, hostAction } from "@/lib/api";
 import { ChatMsg, EMOJIS, MAX_CHAT, encode, parseChat, parseReaction, uid } from "@/lib/realtime";
 import { useTranslation } from "@/lib/useTranslation";
 import { VideoGrid } from "./VideoGrid";
+import Brand from "./Brand";
+import Icon from "./Icon";
 
 type Tab = "captions" | "chat" | "people" | "settings";
 type Float = { id: string; emoji: string; x: number };
@@ -272,8 +274,9 @@ export default function Meeting({
     <div className="meeting">
       <div className="topbar">
         <div className="left">
-          <strong>{code}</strong>
-          <button className="pill action" onClick={copyInvite}>{copied ? "✓ Link copied" : "🔗 Copy invite link"}</button>
+          <Brand compact />
+          <span className="room-code-pill" aria-label="Meeting code">{code}</span>
+          <button className="pill action invite-action" onClick={copyInvite}><Icon name="link" /><span>{copied ? "Link copied" : "Copy invite link"}</span></button>
           <span className={`pill ${lkPill}`}><span className="dot" />Video {lkState}</span>
           <span className={`pill ${connPill}`}><span className="dot" />Translation {tr.conn}</span>
           {tr.locked && <span className="pill warn"><span className="dot" />Locked</span>}
@@ -371,9 +374,9 @@ export default function Meeting({
               <>
                 {isHost && (
                   <div className="host-bar">
-                    <button className="btn ghost" onClick={() => host("mute", { target: "*" })}>🔇 Mute all</button>
+                    <button className="btn ghost" onClick={() => host("mute", { target: "*" })}><Icon name="mute" /> Mute all</button>
                     <button className="btn ghost" onClick={() => host("lock", { locked: !tr.locked })}>
-                      {tr.locked ? "🔓 Unlock room" : "🔒 Lock room"}
+                      <Icon name="lock" /> {tr.locked ? "Unlock room" : "Lock room"}
                     </button>
                   </div>
                 )}
@@ -481,20 +484,20 @@ export default function Meeting({
 
       <div className="controls">
         <button className={`ctl ${micOn ? "" : "off"}`} onClick={toggleMic} aria-label="Toggle microphone">
-          🎙<span className="txt">{micOn ? "Mute" : "Unmute"}</span>
+          <Icon name="mic" /><span className="txt">{micOn ? "Mute" : "Unmute"}</span>
         </button>
         <button className={`ctl ${camOn ? "" : "off"}`} onClick={toggleCam} aria-label="Toggle camera">
-          📷<span className="txt">{camOn ? "Stop video" : "Start video"}</span>
+          <Icon name="camera" /><span className="txt">{camOn ? "Stop video" : "Start video"}</span>
         </button>
         <button className={`ctl ${sharing ? "on" : ""}`} onClick={toggleShare} aria-label="Share screen">
-          🖥<span className="txt">{sharing ? "Stop sharing" : "Share"}</span>
+          <Icon name="share" /><span className="txt">{sharing ? "Stop sharing" : "Share"}</span>
         </button>
         <button className={`ctl ${handUp ? "on" : ""}`} onClick={toggleHand} aria-label="Raise hand">
-          ✋<span className="txt">{handUp ? "Lower hand" : "Raise hand"}</span>
+          <Icon name="hand" /><span className="txt">{handUp ? "Lower hand" : "Raise hand"}</span>
         </button>
         <div className="react-wrap">
           <button className={`ctl ${reactOpen ? "on" : ""}`} onClick={() => setReactOpen((v) => !v)} aria-label="Reactions">
-            😊<span className="txt">React</span>
+            <Icon name="smile" /><span className="txt">React</span>
           </button>
           {reactOpen && (
             <div className="react-pop" role="menu">
@@ -505,15 +508,15 @@ export default function Meeting({
           )}
         </div>
         <button className={`ctl ${tab === "chat" ? "on" : ""}`} onClick={() => setTab("chat")} aria-label="Open chat">
-          💬<span className="txt">{unread ? `Chat (${unread})` : "Chat"}</span>
+          <Icon name="chat" /><span className="txt">{unread ? `Chat (${unread})` : "Chat"}</span>
         </button>
         <button className={`ctl ${captionsOn ? "on" : ""}`} onClick={() => setCaptionsOn((v) => !v)} aria-label="Toggle captions">
-          CC<span className="txt">Captions</span>
+          <Icon name="captions" /><span className="txt">Captions</span>
         </button>
         <button className={`ctl ${voiceOn ? "on" : ""}`} onClick={() => setVoiceOn((v) => !v)} aria-label="Toggle translated voice">
-          🔊<span className="txt">Voice</span>
+          <Icon name="volume" /><span className="txt">Voice</span>
         </button>
-        <button className="ctl leave" onClick={leave} aria-label="Leave">Leave</button>
+        <button className="ctl leave" onClick={leave} aria-label="Leave"><Icon name="leave" /><span className="txt">Leave</span></button>
       </div>
     </div>
   );

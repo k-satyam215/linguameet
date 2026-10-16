@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5988ff"/><stop offset="1" stop-color="#8a55ef"/></linearGradient></defs><rect width="64" height="64" rx="18" fill="#10131b"/><rect x="7" y="7" width="50" height="50" rx="15" fill="url(#g)"/><path d="M19 26v12m7-19v26m7-18v10m7-15v20m7-12v4" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4.5"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs><linearGradient id="linguameet-mark" x1="6" y1="5" x2="42" y2="43" gradientUnits="userSpaceOnUse"><stop stop-color="#5D74F5"/><stop offset="1" stop-color="#25B99B"/></linearGradient></defs>
+  <rect x="2" y="2" width="44" height="44" rx="15" fill="url(#linguameet-mark)"/>
+  <path d="M10 17.5c0-3 2.5-5.5 5.5-5.5h11c3 0 5.5 2.5 5.5 5.5v5c0 3-2.5 5.5-5.5 5.5h-6l-6.5 5v-6A5.5 5.5 0 0 1 10 22.5v-5Z" fill="#fff"/>
+  <path d="M17 19h8m-8 4h5" stroke="#526CE0" stroke-width="2" stroke-linecap="round"/>
+  <path d="M27 28.5h5.5c2.5 0 4.5 2 4.5 4.5v1l3 3h-7.5c-2.5 0-4.5-2-4.5-4.5v-1" fill="#D9FFF3"/>
+  <circle cx="34.5" cy="31" r="1" fill="#159C82"/>
+</svg>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Lang } from "@/lib/api";
+import Brand from "./Brand";
+import Icon from "./Icon";
 
 export type JoinSelection = {
   name: string;
@@ -114,9 +116,16 @@ export default function PreJoin({
   };
 
   return (
-    <main className="lobby">
+    <main className="lobby prejoin-page">
+      <div className="prejoin-shell">
+        <header className="prejoin-top"><Brand compact /><span className="prejoin-room">ROOM <b>{code}</b></span></header>
       <div className="prejoin">
         <div className="prejoin-preview">
+          <div className="prejoin-copy">
+            <div className="eyebrow"><span /> DEVICE CHECK</div>
+            <h1>Look and sound<br /><span>like yourself.</span></h1>
+            <p>Choose your camera, microphone, and languages before joining.</p>
+          </div>
           <div className="tile preview-tile">
             {camOn ? (
               <video ref={videoRef} autoPlay playsInline muted style={{ transform: "scaleX(-1)" }} />
@@ -124,8 +133,8 @@ export default function PreJoin({
               <div className="avatar"><span>{(name || "?").slice(0, 1).toUpperCase()}</span></div>
             )}
             <div className="preview-controls">
-              <button className={`ctl ${micOn ? "" : "off"}`} onClick={() => setMicOn((v) => !v)} aria-label="Toggle microphone">🎙</button>
-              <button className={`ctl ${camOn ? "" : "off"}`} onClick={() => setCamOn((v) => !v)} aria-label="Toggle camera">📷</button>
+              <button className={`ctl ${micOn ? "" : "off"}`} onClick={() => setMicOn((v) => !v)} aria-label="Toggle microphone"><Icon name="mic" /></button>
+              <button className={`ctl ${camOn ? "" : "off"}`} onClick={() => setCamOn((v) => !v)} aria-label="Toggle camera"><Icon name="camera" /></button>
             </div>
           </div>
           {micOn && (
@@ -135,8 +144,9 @@ export default function PreJoin({
         </div>
 
         <div className="lobby-card prejoin-form">
-          <div className="brand"><span className="brand-dot" />Ready to join?</div>
-          <p className="tagline">Meeting <strong>{code}</strong></p>
+          <div className="card-eyebrow"><span>MEETING SETUP</span><span className="free-badge">Step 2 of 2</span></div>
+          <h2>Ready to join?</h2>
+          <p className="card-intro">Meeting <strong className="room-code-inline">{code}</strong></p>
 
           <label className="field">
             <span>Your name</span>
@@ -174,8 +184,9 @@ export default function PreJoin({
 
           {error && <div className="error">{error}</div>}
           <button className="btn" onClick={join} disabled={busy || !name.trim()}>{busy ? "Joining…" : "Join now"}</button>
-          <button className="btn ghost" style={{ marginTop: 8 }} onClick={onBack}>Back</button>
+          <button className="btn ghost prejoin-back" onClick={onBack}>Back to lobby</button>
         </div>
+      </div>
       </div>
     </main>
   );
