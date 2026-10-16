@@ -101,7 +101,7 @@ cd backend && pip install -r requirements-dev.txt && pytest -q && ruff check app
 cd frontend && npm test && npm run typecheck && npm run build
 ```
 Real-browser E2E (`e2e/`): two Chromium users with a fake mic, mock AI provider; covers lobby, pre-join, invite link,
-translation both directions, host/guest UI, live media/data delivery, host actions, responsive layout (26 checks). See the header of `e2e/e2e.mjs` to run it.
+translation both directions, host/guest UI, live media/data delivery, host actions, responsive layout (27 checks). See the header of `e2e/e2e.mjs` to run it.
 Backend: VAD, registry, pipeline (partials, deadlines, stale-drop, rate-limit, hallucination filter), Groq adapters (fake HTTP), and WebSocket end-to-end (auth, isolation, capacity).
 
 ## Adding a language
