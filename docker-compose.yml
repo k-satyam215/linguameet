@@ -1,0 +1,24 @@
+# Local development services. The API is optional; run it with `docker compose --profile full up --build`.
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --dev --bind 0.0.0.0
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+
+  api:
+    profiles: [full]
+    build: ./backend
+    env_file: [.env]
+    environment:
+      # URL returned to browsers on the host machine.
+      LIVEKIT_URL: ws://localhost:7880
+      # URL used by the API container for admin calls to LiveKit.
+      LIVEKIT_HTTP_URL: http://livekit:7880
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: secret
+    ports:
+      - "8000:8000"
+    depends_on: [livekit]

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: linguameet-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:get_app --factory --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: PROVIDER
+        value: mock
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
