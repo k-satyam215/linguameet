@@ -22,8 +22,10 @@ without generating LiveKit overage charges. Vercel Hobby is for personal/non-com
 
 1. Push this repository to GitHub **without `.env`** (the root `.gitignore` excludes it).
 2. In Render, create a Blueprint from the repository and choose `render.yaml`. Add the LiveKit Cloud project
-   WebSocket URL, API key, and API secret as Render environment values. Keep `PROVIDER=mock` unless you have
-   independently chosen a translation provider and understand its data handling and usage limits.
+   WebSocket URL, API key, and API secret as Render environment values. `PROVIDER=auto` uses mock captions until
+   `GROQ_API_KEY` is configured, then enables Groq speech recognition and translation. When enabled, spoken audio
+   segments are sent to Groq for transcription and transcript text is sent to Groq for translation; review its
+   current terms, privacy policy, and free-tier limits before adding a key.
 3. In Vercel, import the repository and set the project Root Directory to `frontend`. Add
    `NEXT_PUBLIC_API_URL=https://<your-render-service>.onrender.com` before deploying.
 4. In Render, set `CORS_ORIGINS` to the exact Vercel deployment origin (for example

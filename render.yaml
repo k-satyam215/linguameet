@@ -9,7 +9,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: PROVIDER
-        value: mock
+        value: auto
       - key: CORS_ORIGINS
         value: https://linguameet-amber.vercel.app
       - key: LIVEKIT_URL
