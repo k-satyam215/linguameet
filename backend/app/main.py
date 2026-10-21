@@ -1,10 +1,11 @@
 """FastAPI entrypoint: join API, language list, metrics and the translation WebSocket."""
 from __future__ import annotations
 
+import asyncio
 import json
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Header, HTTPException, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -14,8 +15,9 @@ from .languages import DEFAULT_REGISTRY, LanguageRegistry
 from .latency import Metrics
 from .livekit_admin import LiveKitAdmin, LiveKitAdminError
 from .pipeline import TranslationPipeline
-from .providers import build_providers
+from .providers import ProviderError, build_providers, build_tts
 from .rooms import RoomFull, RoomManager
+from .tts_service import TtsBusy, TtsService, TtsTooLong
 
 MAX_AUDIO_CHUNK = 64 * 1024  # bytes per WS frame; real chunks are ~1 KB
 
@@ -23,6 +25,11 @@ MAX_AUDIO_CHUNK = 64 * 1024  # bytes per WS frame; real chunks are ~1 KB
 class HostAction(BaseModel):
     target: str = ""
     locked: bool = False
+
+
+class TtsRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=1000)
+    speaker: str = Field(default="", max_length=64)
 
 
 class JoinRequest(BaseModel):
@@ -33,7 +40,7 @@ class JoinRequest(BaseModel):
 
 
 def create_app(settings: Settings | None = None, registry: LanguageRegistry | None = None,
-               asr=None, translator=None, admin=None) -> FastAPI:
+               asr=None, translator=None, admin=None, tts=None) -> FastAPI:
     settings = settings or Settings.from_env()
     registry = registry or DEFAULT_REGISTRY
     if asr is None or translator is None:
@@ -44,17 +51,22 @@ def create_app(settings: Settings | None = None, registry: LanguageRegistry | No
     pipeline = TranslationPipeline(asr, translator, registry, metrics, settings)
     manager = RoomManager(pipeline, registry, settings)
     admin = admin or LiveKitAdmin(settings)
+    tts = tts if tts is not None else build_tts(settings)
+    tts_service = TtsService(tts, settings, metrics) if tts is not None else None
+    tts_name = tts.name if tts is not None else "none"
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
         yield
         await translator.aclose()
         await admin.aclose()
+        if tts_service is not None:
+            await tts_service.aclose()
 
     app = FastAPI(title="LinguaMeet API", version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware, allow_origins=list(settings.cors_origins),
-        allow_methods=["GET", "POST"], allow_headers=["authorization", "content-type"],
+        allow_methods=["GET", "POST"], allow_headers=["authorization", "content-type"], expose_headers=["retry-after"],
     )
     app.state.manager = manager
     app.state.metrics = metrics
@@ -62,7 +74,7 @@ def create_app(settings: Settings | None = None, registry: LanguageRegistry | No
 
     @app.get("/api/health")
     async def health():
-        return {"ok": True, "provider": provider_name, "rooms": len(manager.rooms)}
+        return {"ok": True, "provider": provider_name, "tts": tts_name, "rooms": len(manager.rooms)}
 
     @app.get("/api/languages")
     async def languages():
@@ -92,6 +104,23 @@ def create_app(settings: Settings | None = None, registry: LanguageRegistry | No
             "livekit_token": auth.livekit_token(settings, req.room, identity, name),
             "ws_token": auth.ws_token(settings, req.room, identity, name, req.speak, req.listen),
         }
+
+    @app.post("/api/tts")
+    async def speak(req: TtsRequest, authorization: str = Header("")):
+        claims = auth.verify_ws_token(settings, authorization.removeprefix("Bearer ").strip())
+        if claims is None:
+            raise HTTPException(401, "Invalid or expired session")
+        if tts_service is None:
+            raise HTTPException(404, "Natural voice is not enabled on this server")
+        try:
+            wav = await tts_service.speak(claims["sub"], req.text, req.speaker)
+        except TtsTooLong:
+            raise HTTPException(413, "Text too long for voice")
+        except TtsBusy as e:
+            raise HTTPException(429, "Voice is busy; use the browser voice", headers={"Retry-After": str(int(e.retry_after) + 1)})
+        except (ProviderError, asyncio.TimeoutError):
+            raise HTTPException(502, "Voice provider failed")
+        return Response(content=wav, media_type="audio/wav", headers={"Cache-Control": "no-store"})
 
     def _host(authorization: str) -> dict:
         claims = auth.verify_ws_token(settings, authorization.removeprefix("Bearer ").strip())
@@ -144,7 +173,7 @@ def create_app(settings: Settings | None = None, registry: LanguageRegistry | No
             return
         await ws.accept()
         room_code = claims["room"]
-        await ws.send_json({"type": "ready", "identity": claims["sub"], "provider": provider_name})
+        await ws.send_json({"type": "ready", "identity": claims["sub"], "provider": provider_name, "tts": tts_name})
         try:
             p = await manager.join(room_code, claims["sub"], claims["name"], ws, claims["speak"], claims["listen"])
         except RoomFull as e:

@@ -421,7 +421,7 @@ export default function Meeting({
                 </div>
                 <div className="setting">
                   <label className="switch">
-                    <span>Translated voice<small>Speaks translations using a voice installed on your device. Each speaker gets a consistent voice.</small></span>
+                    <span>Translated voice<small>{tr.naturalVoice ? "Natural AI voice. Each speaker gets a consistent voice; falls back to your device voice if the server is busy." : "Speaks translations using a voice installed on your device. Each speaker gets a consistent voice."}</small></span>
                     <input type="checkbox" checked={voiceOn} onChange={(e) => setVoiceOn(e.target.checked)} />
                   </label>
                 </div>

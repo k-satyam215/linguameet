@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Lang, wsUrl } from "./api";
 import { MicStreamer } from "./micStreamer";
 import { completedSentences, remainder } from "./sentences";
-import { SpeechQueue, hasVoice } from "./tts";
+import { hasVoice } from "./tts";
+import { VoiceQueue } from "./voice";
 
 export type Timings = { asr_ms?: number; first_token_ms?: number; translate_ms?: number; e2e_ms?: number; since_speech_end_ms?: number };
 
@@ -47,7 +48,12 @@ export function useTranslation(o: Opts) {
 
   const ws = useRef<WebSocket | null>(null);
   const mic = useRef<MicStreamer>(new MicStreamer());
-  const speech = useRef<SpeechQueue>(new SpeechQueue());
+  // Server-side natural voice is announced in the WebSocket "ready" event; the browser voice is the fallback.
+  const naturalVoice = useRef(false);
+  const [naturalVoiceOn, setNaturalVoiceOn] = useState(false);
+  const speech = useRef<VoiceQueue>(
+    new VoiceQueue({ getToken: () => optsRef.current.token, serverTts: () => naturalVoice.current })
+  );
   const spoken = useRef<Map<string, number>>(new Map());
   const optsRef = useRef(o);
   optsRef.current = o;
@@ -94,6 +100,12 @@ export function useTranslation(o: Opts) {
   const onEvent = useCallback(
     (ev: any) => {
       switch (ev.type) {
+        case "ready": {
+          const on = !!ev.tts && ev.tts !== "none";
+          naturalVoice.current = on;
+          setNaturalVoiceOn(on);
+          break;
+        }
         case "roster":
           setRoster(ev.participants ?? []);
           setGlossary(ev.glossary ?? []);
@@ -243,5 +255,5 @@ export function useTranslation(o: Opts) {
     };
   }, [o.listen, o.langs, bcp47]);
 
-  return { conn, captions, roster, glossary, notice, lastE2E, rtt, micError, updateGlossary, voiceAvailable, host, locked, removed };
+  return { conn, captions, roster, glossary, notice, lastE2E, rtt, micError, updateGlossary, voiceAvailable: naturalVoiceOn ? true : voiceAvailable, naturalVoice: naturalVoiceOn, host, locked, removed };
 }

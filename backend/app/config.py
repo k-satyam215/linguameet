@@ -29,6 +29,17 @@ class Settings:
     groq_translate_model: str = "openai/gpt-oss-20b"
     groq_reasoning_effort: str = ""  # leave empty to omit the field
 
+    # Natural-sounding translated voice (server-side TTS). "auto" -> gemini when a key is set.
+    tts_provider: str = "auto"  # auto | gemini | none
+    gemini_api_key: str = ""
+    gemini_tts_model: str = "gemini-3.8-flash-tts"
+    tts_voices: tuple[str, ...] = ("Sulafat", "Charon", "Kore", "Puck", "Aoede", "Fenrir")
+    tts_style: str = "Say in a natural, warm, conversational tone: "  # "" disables the style prefix
+    tts_timeout_s: float = 10.0
+    tts_concurrency: int = 3
+    tts_max_chars: int = 400
+    tts_per_user_per_min: int = 40
+
     livekit_url: str = "ws://localhost:7880"
     livekit_http_url: str = ""   # defaults to livekit_url with ws->http
     livekit_api_key: str = "devkey"
@@ -62,7 +73,20 @@ class Settings:
             kwargs["cors_origins"] = tuple(o.strip() for o in origins.split(",") if o.strip())
         if os.environ.get("JWT_SECRET"):
             kwargs["jwt_secret"] = os.environ["JWT_SECRET"]
+        voices = os.environ.get("TTS_VOICES")
+        if voices:
+            kwargs["tts_voices"] = tuple(v.strip() for v in voices.split(",") if v.strip())
+        style = os.environ.get("TTS_STYLE")
+        if style is not None:
+            kwargs["tts_style"] = style
         return Settings(
+            tts_provider=os.environ.get("TTS_PROVIDER", "auto").lower(),
+            gemini_api_key=os.environ.get("GEMINI_API_KEY", ""),
+            gemini_tts_model=os.environ.get("GEMINI_TTS_MODEL", "gemini-3.8-flash-tts"),
+            tts_timeout_s=_f("TTS_TIMEOUT_S", 10.0),
+            tts_concurrency=_i("TTS_CONCURRENCY", 3),
+            tts_max_chars=_i("TTS_MAX_CHARS", 400),
+            tts_per_user_per_min=_i("TTS_PER_USER_PER_MIN", 40),
             provider=os.environ.get("PROVIDER", "auto").lower(),
             groq_api_key=os.environ.get("GROQ_API_KEY", ""),
             groq_asr_model=os.environ.get("GROQ_ASR_MODEL", "whisper-large-v3-turbo"),

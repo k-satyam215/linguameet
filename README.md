@@ -70,6 +70,17 @@ cd backend && python -m scripts.bench my_hindi_clip.wav --speak hi-en --listen e
 ```
 Live numbers are also at `GET /api/metrics` (p50/p95 per stage) and in the app's *Translation* tab.
 
+## Natural translated voice (optional)
+
+Set `GEMINI_API_KEY` (server environment only) to switch translated speech from the browser's robotic voices to
+Gemini TTS. Each translated sentence is synthesized by `POST /api/tts` (needs your session token), cached, shared
+between listeners of the same sentence, and played in order. Each speaker gets one stable voice (`TTS_VOICES`).
+If the server voice is busy, slow (`TTS_TIMEOUT_S`) or rate-limited, that sentence falls back to the browser voice,
+so the meeting never goes silent. `GET /api/health` shows `"tts":"gemini-tts"` when it is on, and
+`GET /api/metrics` shows `tts_ms` p50/p95. The default model is Gemini 3.8 Flash TTS; `GEMINI_TTS_MODEL` selects another compatible model.
+When enabled, the translated text of each sentence is sent to Google; review its terms, privacy policy and free-tier
+limits first. **Latency and Hindi/Hinglish naturalness are unmeasured: check `tts_ms` and listen on real devices.**
+
 ## How latency is kept low
 - Original-language caption is sent the moment ASR returns; translation streams in behind it.
 - Translation streams token-by-token; the browser **speaks each completed sentence early** instead of waiting for the end.
@@ -91,7 +102,7 @@ Host actions go through the API (`/api/host/*`), which checks host status and th
 - Still missing vs Meet/Teams: scheduling/calendar, recording, background blur, accounts, meeting summary, breakout rooms.
 - The real-browser E2E suite verifies local LiveKit video/audio tracks, chat/reaction delivery, host mute/remove, mock captions, and responsive layout. It uses synthetic devices; physical camera/microphone hardware, screen sharing, and translated voice playback still need manual device checks.
 - **Not true streaming ASR.** Whisper is called per utterance (VAD-cut). Expect roughly "end of sentence + ASR + first translated words". The adapter interface (`providers/base.py`) is where a streaming ASR (e.g. a WebSocket provider) plugs in.
-- **Voice = browser speechSynthesis.** Free, zero server cost, consistent preset voice per speaker — but quality and language coverage depend on the listener's OS/browser. Missing voice ⇒ the UI says so and falls back to captions. Voice cloning is **not** implemented (needs consent flow + a provider).
+- **Voice without `GEMINI_API_KEY` = browser speechSynthesis** (also the per-sentence fallback with it). Free, zero server cost, consistent preset voice per speaker — but quality and language coverage depend on the listener's OS/browser. Missing voice ⇒ the UI says so and falls back to captions. Voice cloning is **not** implemented (needs consent flow + a provider).
 - **Hinglish** support is: a roman-script ASR prompt + a translation prompt that treats code-switching as one language. Quality is **unmeasured** — benchmark with real Indian-accent recordings.
 - Use **headphones**. "Pause my mic while voice plays" (default on) prevents echo loops but means you can't interrupt translated speech.
 - Rooms live in memory in one process (no horizontal scaling yet); no accounts, DB, recording, or billing.

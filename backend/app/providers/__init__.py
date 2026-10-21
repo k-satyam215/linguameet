@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..config import Settings
-from .base import ASR, ASRResult, ProviderError, RateLimited, Translator
+from .base import ASR, TTS, ASRResult, ProviderError, RateLimited, Translator, TtsAudio
 from .mock import MockASR, MockTranslator
 
 
@@ -25,4 +25,20 @@ def build_providers(settings: Settings) -> tuple[ASR, Translator, str]:
     raise RuntimeError(f"unknown provider: {settings.provider}")
 
 
-__all__ = ["ASR", "ASRResult", "Translator", "ProviderError", "RateLimited", "build_providers"]
+def build_tts(settings: Settings) -> TTS | None:
+    """Natural-voice provider, or None (the browser then falls back to its own voices)."""
+    choice = settings.tts_provider
+    if choice == "auto":
+        choice = "gemini" if settings.gemini_api_key else "none"
+    if choice == "none":
+        return None
+    if choice == "gemini":
+        if not settings.gemini_api_key:
+            raise RuntimeError("TTS_PROVIDER=gemini requires GEMINI_API_KEY")
+        from .gemini_tts import GeminiTTS
+
+        return GeminiTTS(settings.gemini_api_key, settings.gemini_tts_model, settings.tts_style, timeout=settings.tts_timeout_s)
+    raise RuntimeError(f"unknown tts provider: {settings.tts_provider}")
+
+
+__all__ = ["ASR", "TTS", "ASRResult", "TtsAudio", "Translator", "ProviderError", "RateLimited", "build_providers", "build_tts"]

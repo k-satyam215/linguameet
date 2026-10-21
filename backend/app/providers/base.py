@@ -47,3 +47,17 @@ class Translator(Protocol):
         ...
 
     async def aclose(self) -> None: ...
+
+
+@dataclass
+class TtsAudio:
+    pcm: bytes          # 16-bit little-endian mono PCM
+    sample_rate: int
+
+
+class TTS(Protocol):
+    name: str
+
+    async def synthesize(self, text: str, voice: str) -> TtsAudio: ...
+
+    async def aclose(self) -> None: ...

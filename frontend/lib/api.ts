@@ -67,6 +67,33 @@ export function validRoom(code: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$/.test(code);
 }
 
+export class TtsError extends Error {
+  constructor(public status: number, public retryAfter: number) {
+    super(`voice failed (${status})`);
+  }
+}
+
+// Natural voice for one translated sentence. Rejects with TtsError so callers can fall back.
+export async function fetchTts(token: string, text: string, speaker: string, timeoutMs = 8000): Promise<Blob> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`${API_URL}/api/tts`, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ text, speaker }),
+      signal: ctrl.signal,
+    });
+    if (!r.ok) throw new TtsError(r.status, Number(r.headers.get("retry-after")) || 0);
+    return await r.blob();
+  } catch (e) {
+    if (e instanceof TtsError) throw e;
+    throw new TtsError(0, 0); // network error or timeout
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function hostAction(
   token: string,
   action: "mute" | "remove" | "lock",
