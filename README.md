@@ -143,3 +143,14 @@ To run API and LiveKit in Docker instead, use `docker compose --profile full up 
 ## Latency and validation limits
 
 This version uses utterance-based Whisper transcription after VAD silence detection, not streaming ASR. It streams translation text after transcription; translated speech uses browser `speechSynthesis`, whose voice availability and latency vary by device. Therefore sub-second speech-to-speech is a future benchmark target, not a verified claim. E2E tests use mock AI and do not prove real LiveKit media or translation quality. See the current [Known limits](#known-limits) above.
+
+## Thesis-quality evaluation
+
+The repo includes a baseline-agnostic scoring tool and a reproducible study protocol in [`THESIS_EVALUATION.md`](THESIS_EVALUATION.md). It scores ASR WER/CER, translation sentence BLEU/character F-score, and p50/p95 latency from frozen JSONL outputs, grouped per model and language. Use `--require-paired` so systems are evaluated on identical utterance IDs. It makes no provider calls and does not imply a model-quality improvement until real, consented recordings and human-checked references are collected.
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m scripts.evaluate predictions.jsonl --require-paired --output metrics.json
+```
+
+`VAD_HANGOVER_MS` in `.env.example` now matches the runtime default (250 ms); record any deliberate override in each experiment manifest so latency comparisons remain reproducible.
