@@ -125,7 +125,7 @@ def score_rows(rows: list[dict]) -> dict:
             "model": model, "task": task, "language": language, "utterances": len(items),
             "wer": word_errors / ref_words if ref_words else None,
             "cer": char_errors / ref_chars if ref_chars else None,
-            "insertions_per_reference_token": max(0, hyp_words - ref_words) / ref_words if ref_words else None,
+            "hypothesis_tokens_per_reference_token": hyp_words / ref_words if ref_words else None,
             "mean_sentence_bleu": sum(bleu) / len(bleu) if bleu else None,
             "mean_sentence_chrf": sum(chrf) / len(chrf) if chrf else None,
             "latency_ms": {
@@ -134,6 +134,3 @@ def score_rows(rows: list[dict]) -> dict:
             },
         })
     return {"schema_version": 1, "groups": results}
-
-
-
