@@ -141,3 +141,28 @@ Repository implementation and reproducibility scaffolding are present. The non-c
 - The in-app browser reported system denial for camera/microphone access. Both participants were disconnected after the check.
 - This verifies production room creation, participant join, LiveKit connectivity, translation-WebSocket readiness, and language-direction configuration. It does **not** verify new speech recognition, translated captions, or translated audio playback in this run because no microphone audio was available.
 - The earlier generated-audio production playback check remains documented in `outputs/client-demo-verification.md`; it used generated English speech and is not participant-data research.
+
+## Exploratory public speech benchmark (2026-10-24)
+
+To make progress without the gated IN22/IndicTrans2 files or new participant recordings, I used the public OpenSLR MUCS 2021 SLR104 Hindi-English test archive. OpenSLR lists the test archive as CC BY-SA 4.0; it is spoken tutorial/code-switch speech, not spontaneous meetings. The archive checksum and aggregate output are in `outputs/openslr104-public-eval.json`; no per-utterance transcript/audio or hypotheses are committed.
+
+- Deterministic subset: 4 recordings in transcript order; 5 evenly spaced utterances per recording for ASR (n=20). VAD used all 276 transcript-timed intervals from those four recordings.
+- Local model: faster-whisper 1.2.1, Whisper `base`, CTranslate2 4.8.3, CPU int8, two threads; model load 17.2 s.
+- ASR on the 20 code-switched utterances: WER **106.3%**, CER **94.0%**, hypothesis/reference token ratio **0.597**. Per-utterance inference p50 **12.46 s**, p95 **62.93 s** on this machine. This is a weak exploratory result, not a claim about the Groq production provider or a meeting-latency measurement.
+- VAD's highest F1 in the tested grid was **0.649** at 450 ms hangover / RMS 200, across the four recordings. Mean absolute start/end boundary errors were about **1.91/2.07 s**. The reported mean decision delay is negative (~-0.91 s), which indicates these transcript segment boundaries are not suitable independent speech-activity boundary labels; do not interpret the VAD latency as a validated measurement.
+- A `small` Whisper checkpoint could not load on the available memory (`mkl_malloc`); its partial model cache is not used by the result. The successful run used `base`.
+
+This external subset now gives a runnable ASR/VAD demonstration. It does not replace the human-approved spontaneous meeting pilot, translate the utterances, measure translated voice, compare against IndicTrans2, or validate production-provider quality. The results must remain labeled exploratory and non-representative.
+
+Reproduction (from `backend`, after downloading the SLR104 Hindi-English test archive from https://www.openslr.org/104/):
+
+```powershell
+python -m pip install -r requirements-research.txt
+python -m scripts.openslr_public_eval ..\work\openslr104\Hindi-English_test.tar.gz --output ..\outputs\openslr104-public-eval.json --model base --model-cache ..\work\openslr104\models --cpu-threads 2 --recordings 4 --per-recording 5
+```
+
+## Current production two-party smoke
+
+On 2026-10-24 the deployed Vercel lobby loaded and populated its language list. A temporary room was created and two separate browser tabs joined. Both showed `Video connected` and `Translation open`; the second participant showed `English · hear Hindi`. The in-app browser denied system microphone/camera access, so this run verified room creation, LiveKit connection, translation-WebSocket readiness, and language-direction configuration, but no new ASR, translated caption, or audio playback. Both test tabs were disconnected afterward. The earlier generated-audio production playback check is documented in `outputs/client-demo-verification.md`.
+
+The two-party smoke-report push passed [GitHub CI run #13](https://github.com/k-satyam215/linguameet/actions/runs/40018929897) (backend and frontend).
