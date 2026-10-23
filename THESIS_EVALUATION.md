@@ -43,3 +43,28 @@ WER is lower-is-better; BLEU/chrF are higher-is-better. Translation metrics do n
 3. Establish frozen baseline scores and latency; then test VAD/settings or model changes one variable at a time.
 4. Run paired evaluation, human review, error analysis, and repeat runs; archive manifests and machine-readable results.
 5. Write the thesis with a transparent methods section, per-language tables, failure cases, limitations, and reproducibility appendix.
+## Running the experiments
+
+### Local IndicTrans2 baseline
+
+The baseline runner uses AI4Bharat's documented Python `Model.batch_translate` interface and emits the same JSONL schema as the LinguaMeet evaluator. IndicTrans2 is an offline baseline, not the live-meeting default; install its dependencies and checkpoint in a separate environment from the app. Follow the official [IndicTrans2 inference and checkpoint instructions](https://github.com/AI4Bharat/IndicTrans2#inference).
+
+Input example (`baseline-input.jsonl`):
+
+```json
+{"id":"en-hi-001","source_text":"Please send the meeting agenda tomorrow.","source_language":"en","target_language":"hi","reference":"कृपया कल बैठक का एजेंडा भेजें।"}
+```
+
+From `backend`, run `python -m scripts.indictrans2_predict baseline-input.jsonl --repo ..\\IndicTrans2 --checkpoint D:\\models\\indictrans2-en-hi --model-type ctranslate2 --device cpu --output indictrans2.jsonl`. For comparable results, concatenate the production-system and baseline outputs, then run `python -m scripts.evaluate paired-predictions.jsonl --require-paired --output results.json`. The runner supports English, Hindi, Bengali, Tamil, Telugu, and Marathi. Hinglish is deliberately excluded because IndicTrans2 has no Hinglish language code; report it as a separate condition and do not pass it off as Hindi.
+
+### Energy-VAD sweep
+
+Create a human-reviewed annotation file with speech intervals in milliseconds:
+
+```json
+{"segments":[{"start_ms":300,"end_ms":1100},{"start_ms":1800,"end_ms":2450}]}
+```
+
+Run `python -m scripts.vad_sweep recording-16k-mono.wav labels.json --hangovers 150,250,350,450 --min-rms 200,300,500 --output vad-results.json`. This executes every hangover/threshold pair on the same audio and reports interval F1, missed/false segments, boundary error, decision delay, CPU processing time, and real-time factor. A human-annotated, consented recording is required for meaningful accuracy claims; the generated voice sample is suitable only for a smoke test.
+
+`Segment` now retains input sample offsets and the VAD decision offset so these measurements use the same timeline. These fields do not change the meeting event schema.

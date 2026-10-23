@@ -55,3 +55,13 @@ def test_flush_returns_pending_speech():
     assert seg.speaking
     s = seg.flush()
     assert s is not None and s.forced
+
+
+def test_segment_reports_input_sample_offsets_and_decision_offset():
+    audio = silence(300) + tone(700) + silence(800)
+    out = feed_all(VadSegmenter(), audio)
+    assert len(out) == 1
+    segment = out[0]
+    assert segment.start_sample < 300 * 16
+    assert segment.end_sample > 1000 * 16
+    assert segment.detected_sample >= segment.end_sample

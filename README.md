@@ -154,3 +154,7 @@ cd backend
 ```
 
 `VAD_HANGOVER_MS` in `.env.example` now matches the runtime default (250 ms); record any deliberate override in each experiment manifest so latency comparisons remain reproducible.
+
+## Running research comparisons
+
+The local IndicTrans2 predictor and energy-VAD sweep are described in [`THESIS_EVALUATION.md`](THESIS_EVALUATION.md). IndicTrans2 stays outside the live deployment: it requires its own upstream runtime/checkpoint. The sweep runs the same labeled audio across VAD hangover and RMS settings. Use consented recordings and human annotations before interpreting scores as research results.
