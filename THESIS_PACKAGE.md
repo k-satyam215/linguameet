@@ -133,3 +133,11 @@ Repository implementation and reproducibility scaffolding are present. The non-c
 - Frontend: 19 tests passed; TypeScript typecheck passed; production build passed.
 - The real-browser E2E could not be run locally because Docker Desktop's LiveKit engine was not accessible from this session. The repository's E2E uses mock AI/synthetic devices and does not establish real-provider or physical-device speech quality.
 - These checks verify implementation/build behavior; they do not replace the participant study or constitute thesis performance results.
+
+## Production smoke verification on 2026-10-24
+
+- The deployed Vercel lobby loaded and populated its multilingual language choices.
+- A temporary production room was created. Two separate browser tabs joined it; both displayed `Video connected` and `Translation open`, and the English-speaking test participant showed `hear Hindi`.
+- The in-app browser reported system denial for camera/microphone access. Both participants were disconnected after the check.
+- This verifies production room creation, participant join, LiveKit connectivity, translation-WebSocket readiness, and language-direction configuration. It does **not** verify new speech recognition, translated captions, or translated audio playback in this run because no microphone audio was available.
+- The earlier generated-audio production playback check remains documented in `outputs/client-demo-verification.md`; it used generated English speech and is not participant-data research.
