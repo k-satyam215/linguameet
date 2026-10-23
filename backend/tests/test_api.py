@@ -84,7 +84,7 @@ def test_two_participants_translate_end_to_end(client):
         assert orig["speakerName"] == "Rahul" and orig["lang"] == "hi"
         final = drain_until(wb, lambda e: e["type"] == "caption" and e["kind"] == "translation" and e["final"])
         assert final["lang"] == "en" and final["text"].startswith("[English]")
-        assert final["timings"]["e2e_ms"] >= 450
+        assert final["timings"]["e2e_ms"] >= SETTINGS.vad_hangover_ms
 
     m = client.get("/api/metrics").json()
     assert m["stages"]["e2e_final_ms"]["count"] >= 1
