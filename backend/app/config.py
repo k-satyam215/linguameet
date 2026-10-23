@@ -57,7 +57,7 @@ class Settings:
     provider_concurrency: int = 4
 
     # VAD / segmentation
-    vad_hangover_ms: int = 450
+    vad_hangover_ms: int = 250
     vad_min_speech_ms: int = 250
     vad_max_segment_ms: int = 9000
     vad_min_rms: float = 300.0
@@ -100,7 +100,7 @@ class Settings:
             translate_timeout_s=_f("TRANSLATE_TIMEOUT_S", 8.0),
             stale_after_s=_f("STALE_AFTER_S", 12.0),
             provider_concurrency=_i("PROVIDER_CONCURRENCY", 4),
-            vad_hangover_ms=_i("VAD_HANGOVER_MS", 450),
+            vad_hangover_ms=_i("VAD_HANGOVER_MS", 250),
             vad_min_speech_ms=_i("VAD_MIN_SPEECH_MS", 250),
             vad_max_segment_ms=_i("VAD_MAX_SEGMENT_MS", 9000),
             vad_min_rms=_f("VAD_MIN_RMS", 300.0),

@@ -85,7 +85,7 @@ limits first. **Latency and Hindi/Hinglish naturalness are unmeasured: check `tt
 - Original-language caption is sent the moment ASR returns; translation streams in behind it.
 - Translation streams token-by-token; the browser **speaks each completed sentence early** instead of waiting for the end.
 - Each target language is translated **once** and fanned out; languages nobody selected are never processed.
-- VAD hangover is configurable (`VAD_HANGOVER_MS`, default 450 ms) and is *included* in all reported end-to-end numbers.
+- VAD hangover is configurable (`VAD_HANGOVER_MS`, default 250 ms) and is *included* in all reported end-to-end numbers.
 - Every stage has a deadline; stale work is dropped with a visible status instead of arriving late.
 
 ## Meeting features

@@ -9,6 +9,7 @@ def test_core_languages_present():
 def test_hinglish_has_asr_prompt_and_translation_note():
     h = R.require("hi-en")
     assert h.asr_prompt
+    assert "Kal deployment hai" not in h.asr_prompt
     assert "Hinglish" in h.note
     assert h.base == "hi"
 

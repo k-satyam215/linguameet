@@ -20,7 +20,7 @@ FRAME_BYTES = FRAME_SAMPLES * 2
 
 @dataclass
 class VadConfig:
-    hangover_ms: int = 450
+    hangover_ms: int = 250
     min_speech_ms: int = 250
     max_segment_ms: int = 9000
     min_rms: float = 300.0

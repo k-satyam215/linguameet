@@ -8,7 +8,7 @@ import type { Participant } from "@/lib/useTranslation";
 type TileSpec = { key: string; p: LKParticipant; screen: boolean };
 
 function Tile({
-  spec, local, localName, info, langs, speaking, duck, hand, pinned, onPin,
+  spec, local, localName, info, langs, speaking, muteOriginal, hand, pinned, onPin,
 }: {
   spec: TileSpec;
   local: boolean;
@@ -16,7 +16,7 @@ function Tile({
   info?: Participant;
   langs: Lang[];
   speaking: boolean;
-  duck: boolean;
+  muteOriginal: boolean;
   hand: boolean;
   pinned: boolean;
   onPin: () => void;
@@ -37,19 +37,16 @@ function Tile({
     };
   }, [vtrack]);
 
+  // Set the level before attaching so source audio cannot leak at full volume on mount.
   useEffect(() => {
     const el = aref.current;
     if (!el || !atrack) return;
+    el.volume = muteOriginal ? 0 : 1;
     atrack.attach(el);
     return () => {
       atrack.detach(el);
     };
-  }, [atrack]);
-
-  // Original audio ducking: keep the real voice quiet under translated speech.
-  useEffect(() => {
-    if (aref.current) aref.current.volume = duck ? 0.18 : 1;
-  });
+  }, [atrack, muteOriginal]);
 
   const name = p.name || (local ? localName : "") || p.identity;
   const speak = langs.find((l) => l.code === info?.speak)?.name;
@@ -80,7 +77,7 @@ function Tile({
 }
 
 export function VideoGrid({
-  participants, local, localName, roster, langs, activeSpeakers, duck, hands, pinned, onPin,
+  participants, local, localName, roster, langs, activeSpeakers, muteOriginal, hands, pinned, onPin,
 }: {
   participants: LKParticipant[];
   local: LKParticipant;
@@ -88,7 +85,7 @@ export function VideoGrid({
   roster: Participant[];
   langs: Lang[];
   activeSpeakers: string[];
-  duck: boolean;
+  muteOriginal: boolean;
   hands: string[];
   pinned: string | null;
   onPin: (key: string | null) => void;
@@ -112,7 +109,7 @@ export function VideoGrid({
       info={roster.find((r) => r.identity === t.p.identity)}
       langs={langs}
       speaking={activeSpeakers.includes(t.p.identity)}
-      duck={duck}
+      muteOriginal={muteOriginal}
       hand={hands.includes(t.p.identity)}
       pinned={explicit === t.key}
       onPin={() => onPin(explicit === t.key ? null : t.key)}

@@ -26,8 +26,8 @@ class Language:
 
 
 HINGLISH_ASR_PROMPT = (
-    "Yeh ek meeting hai. Kal deployment hai, PR merge kar do. "
-    "Client ne API ka response check kiya, bug fix ho gaya."
+    "Hinglish meeting audio with Hindi-English code-switching. Preserve English technical terms and names. "
+    "Write Hindi words in Roman script and transcribe only words that are audible."
 )
 
 _LANGS: list[Language] = [

@@ -33,7 +33,7 @@ export default function Meeting({
   const [listen, setListen] = useState(initialListen);
   const [voiceOn, setVoiceOn] = useState(true);
   const [pauseMic, setPauseMic] = useState(true);
-  const [duck, setDuck] = useState(true);
+  const [muteOriginal, setMuteOriginal] = useState(true);
   const [captionsOn, setCaptionsOn] = useState(true);
   const [micOn, setMicOn] = useState(initialMicOn);
   const [camOn, setCamOn] = useState(initialCamOn);
@@ -305,7 +305,7 @@ export default function Meeting({
             roster={tr.roster}
             langs={langs}
             activeSpeakers={active}
-            duck={duck && voiceOn}
+            muteOriginal={muteOriginal && voiceOn}
             hands={hands}
             pinned={pinned}
             onPin={setPinned}
@@ -427,8 +427,8 @@ export default function Meeting({
                 </div>
                 <div className="setting">
                   <label className="switch">
-                    <span>Lower original audio<small>Ducks the speaker&apos;s real voice while translated voice is on.</small></span>
-                    <input type="checkbox" checked={duck} onChange={(e) => setDuck(e.target.checked)} />
+                    <span>Only translated voice<small>Mutes the speaker&apos;s original audio while translated voice is on.</small></span>
+                    <input type="checkbox" checked={muteOriginal} onChange={(e) => setMuteOriginal(e.target.checked)} />
                   </label>
                 </div>
                 <div className="setting">

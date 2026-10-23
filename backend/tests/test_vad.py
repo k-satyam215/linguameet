@@ -19,7 +19,7 @@ def test_one_utterance_is_segmented():
     assert len(out) == 1
     s = out[0]
     assert 600 <= s.duration_ms <= 1300
-    assert s.hangover_ms == 450
+    assert s.hangover_ms == 250
     assert not s.forced
 
 
